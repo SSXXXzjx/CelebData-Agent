@@ -3,6 +3,9 @@
 # CelebData Agent
 **轻量、可扩展的明星图片数据集构建 Agent，默认接入 DeepSeek。**
 
+<img width="1983" height="793" alt="CelebData Agent Banner" src="assets/hero.png" />
+<br>
+
 [![Python][python-shield]][python-url]
 [![Platform][platform-shield]][platform-url]
 [![License][license-shield]][license-url]

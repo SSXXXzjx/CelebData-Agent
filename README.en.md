@@ -3,6 +3,9 @@
 # CelebData Agent
 **A lightweight, extensible agent for building celebrity image datasets, powered by DeepSeek by default.**
 
+<img width="1983" height="793" alt="CelebData Agent Banner" src="assets/hero.png" />
+<br>
+
 [![Python][python-shield]][python-url]
 [![Platform][platform-shield]][platform-url]
 [![License][license-shield]][license-url]
