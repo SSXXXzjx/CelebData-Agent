@@ -96,6 +96,24 @@ def test_extract_cookie_strips_quotes_and_explanation():
     assert extract_cookie(text) == 'abRequestId=abc; a1=123'
 
 
+def test_extract_cookie_with_chinese_appended():
+    text = 'abRequestId=abc; a1=123，这个是cookie帮我加进去'
+    assert extract_cookie(text) == 'abRequestId=abc; a1=123'
+
+
+def test_extract_cookie_keeps_ascii_special_values():
+    text = 'unread={%22ub%22:1}; id_token=VjEAA+Ooa8i/i8g0z; loadts=1786525178482，中文'
+    assert extract_cookie(text) == 'unread={%22ub%22:1}; id_token=VjEAA+Ooa8i/i8g0z; loadts=1786525178482'
+
+
+def test_extract_cookie_drops_invalid_segments():
+    assert extract_cookie('garbage text; a1=123; 中文说明') == 'a1=123'
+
+
+def test_extract_cookie_stops_at_question_marks():
+    assert extract_cookie('loadts=1786525178482????cookie???????') == 'loadts=1786525178482'
+
+
 def test_store_wrapped_cookie_with_explanation(tmp_path, cfg):
     env = tmp_path / '.env'
     handled, message = try_store_credential(
@@ -108,10 +126,22 @@ def test_store_wrapped_cookie_with_explanation(tmp_path, cfg):
     assert '非 ASCII' not in message
 
 
-def test_store_cookie_rejects_non_ascii(tmp_path, cfg):
+def test_store_cookie_with_chinese_appended(tmp_path, cfg):
     env = tmp_path / '.env'
     handled, message = try_store_credential(
+        'abRequestId=abc; a1=123，这个是cookie帮我加进去',
+        cfg, SimpleNamespace(redactor=Redactor()), env_path=env)
+    assert handled
+    stored = env.read_text(encoding='utf-8')
+    assert 'abRequestId=abc; a1=123' in stored
+    assert '这个是cookie' not in stored
+
+
+def test_store_cookie_strips_chinese_keeps_ascii_pairs(tmp_path, cfg):
+    env = tmp_path / '.env'
+    handled, _message = try_store_credential(
         '“abc=1; def=2中文” 解释', cfg, SimpleNamespace(redactor=Redactor()), env_path=env)
     assert handled
-    assert '非 ASCII' in message
-    assert not env.exists() or 'XHS_COOKIE' not in env.read_text(encoding='utf-8')
+    stored = env.read_text(encoding='utf-8')
+    assert 'abc=1; def=2' in stored
+    assert '中文' not in stored

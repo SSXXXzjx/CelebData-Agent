@@ -98,16 +98,38 @@ def _parse_pairs(text):
 def extract_cookie(text):
     """Extract the real cookie from pasted text.
 
-    Handles wrapping quotes (English/Chinese), trailing explanations, and
-    paste-wrap newlines. Returns '' when nothing usable is found.
+    Handles wrapping quotes (English/Chinese), paste-wrap newlines, and mixed
+    Chinese explanations: only ASCII `key=value` pairs are kept, so a paste
+    like `a1=x; webId=y，这是cookie帮我加进去` still yields the real cookie.
+    Returns '' when nothing usable is found.
     """
     value = (text or '').strip()
     for open_q, close_q in (('“', '”'), ('"', '"'), ("'", "'"), ('‘', '’')):
         if value.startswith(open_q) and close_q in value:
             value = value[1:value.find(close_q, 1)]
             break
-    value = re.sub(r'[\r\n]+', '', value)
-    return value.strip()
+    value = re.sub(r'[\r\n\u3000]+', '', value)
+    pairs = []
+    for segment in value.split(';'):
+        segment = segment.strip()
+        key, sep, val = segment.partition('=')
+        if not sep:
+            continue
+        key = key.strip()
+        if not re.fullmatch(r'[A-Za-z0-9_\-]+', key):
+            continue
+        ascii_val = []
+        for ch in val:
+            # '?' 既不是小红书 cookie 值的合法字符，也可能是粘贴/传输时
+            # 中文被替换成的占位符，一律在此截断。
+            if ord(ch) > 127 or ch == '?':
+                break
+            ascii_val.append(ch)
+        ascii_val = ''.join(ascii_val).strip()
+        if not ascii_val:
+            continue
+        pairs.append(f'{key}={ascii_val}')
+    return '; '.join(pairs)
 
 
 def detect_credential(text):
@@ -162,8 +184,8 @@ def try_store_credential(text, cfg, ctx=None, env_path=None):
 
     if kind == 'cookie':
         cookie = extract_cookie(payload)
-        if not cookie or not cookie.isascii():
-            return True, 'Cookie 包含非 ASCII 字符或为空，未保存；请只粘贴 cookie 本体'
+        if not cookie:
+            return True, '未提取到有效 Cookie（仅保留 ASCII 的 key=value 对）；请只粘贴 cookie 本体'
         write_env_value(env_path, 'XHS_COOKIE', cookie)
         os.environ['XHS_COOKIE'] = cookie
         if ctx is not None and ctx.redactor is not None:
