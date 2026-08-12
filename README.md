@@ -1,100 +1,81 @@
-# Celebrity
+<div align="center">
 
-轻量、可扩展的 **Agent**，用于构建明星图片数据集：模型 API 默认接入 **DeepSeek（deepseek-v4-flash）**（OpenAI 兼容协议），把「爬取 → 清洗 → 模型判断 → 打标签 → 打包」沉淀为一组可被 Agent 调用的工具，同时保留确定性流水线模式。
+# CelebData Agent
+**轻量、可扩展的明星图片数据集构建 Agent，默认接入 DeepSeek。**
 
-## 设计原则
+[![Python][python-shield]][python-url]
+[![Platform][platform-shield]][platform-url]
+[![License][license-shield]][license-url]
+<br>
+[![Release][release-shield]][release-url]
+[![Downloads][downloads-shield]][downloads-url]
 
-- **窄腰核心**：`celebrity/core/agent.py` 是唯一的对话/工具循环；CLI 只是入口适配层，不重复实现第二套引擎。
-- **注册表扩展**：模型 Provider、视觉模型、工具全部走注册表；新增 OpenAI 兼容厂商只需在 `config.yaml` 加一段配置，无需改代码。
-- **轻便**：默认安装不含 torch/transformers（视觉大模型为可选 extra），核心依赖仅 httpx/PyYAML/rich 等。
-- **安全**：密钥只进 `.env`；工具按 `read / write / destructive` 风险分级；破坏性操作需人工确认；路径强制限制在工作目录内；所有输出做密钥脱敏；重试有界。
-- **自由化**：任意 OpenAI 兼容 API 可作模型 Provider（默认 DeepSeek）；视觉模型可选 YuNet / OpenAI 兼容视觉 / 本地 Qwen3-VL；Agent 可自由编排工具或走确定性 `pipeline` 命令。
+[python-shield]: https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white
+[python-url]: https://www.python.org/
+[platform-shield]: https://img.shields.io/badge/Win%20%7C%20Linux%20%7C%20macOS-lightgrey
+[platform-url]: https://github.com/SSXXXzjx/CelebData-Agent
+[license-shield]: https://img.shields.io/badge/License-MIT-orange
+[license-url]: https://github.com/SSXXXzjx/CelebData-Agent/blob/main/LICENSE
+[release-shield]: https://img.shields.io/github/v/release/SSXXXzjx/CelebData-Agent?style=flat
+[release-url]: https://github.com/SSXXXzjx/CelebData-Agent/releases
+[downloads-shield]: https://img.shields.io/github/downloads/SSXXXzjx/CelebData-Agent/total?style=flat
+[downloads-url]: https://github.com/SSXXXzjx/CelebData-Agent/releases
 
-## 快速开始
+</div>
 
-```bash
-pip install -r requirements.txt     # 或 pip install -e .
-cp .env.example .env      # 填写 DEEPSEEK_API_KEY（默认模型 API）
-python -m celebrity doctor   # 环境自检
-python main.py                 # 主页面：横幅 + 功能介绍 + 菜单（↑/↓ 选择，ESC/Ctrl+C 返回上一级）
-```
+输入一句任务，Agent 自动完成「爬取 → 去重 → 模型判断 → 打标签 → 打包」全流程，产出可直接用于训练的图片数据集。
 
-主页面选「进入对话」后直接输入任务即可；输入 `/` 开头可设置运行时配置。进度步骤显示在输入框上方，模型 / Token / 耗时显示在输入框下方：
+- **Agent 自由编排**：爬取、判断、补爬、打标签由模型按需调度，数量不足自动补充。
+- **模型即插即用**：默认 DeepSeek，任意 OpenAI 兼容 API 改配置即可切换；逐图判断默认 Qwen3-VL，轻量 YuNet 兜底。
+- **全程可见**：流式输出、实时进度条与耗时统计，不像是黑盒。
+- **密钥安全**：API Key / Cookie 只进 `.env`，粘贴即自动填充，绝不发送给模型或进入仓库。
 
-**直接粘贴密钥**：在对话里粘贴 `DEEPSEEK_API_KEY=sk-xxx`、`XHS_COOKIE=...` 或裸的 `sk-xxx` / Cookie 文本，程序会本地识别并写入 `.env`（只显示脱敏提示，**不会发送给模型**）。
-
-```
-/model    切换模型厂商（deepseek / openai / 自定义）、设置 API Key
-/apikey   为当前厂商设置 API Key（写入 .env）
-/cookie   设置小红书 Cookie（写入 .env）
-/vision   切换视觉模型（无 / YuNet / OpenAI 兼容视觉 / 本地 Qwen3-VL）
-/status   查看当前配置（密钥脱敏）
-/tools    查看可用工具
-/reset    开启新会话
-/exit     返回主页面
-```
-
-按 ESC 或 Ctrl+C 可逐级返回（对话 → 主页面），在主页面再按一次 Ctrl+C 是退出前确认。
-
-一次性任务：
+## Get Started
 
 ```bash
-python -m celebrity agent "构建 宋雨琦 的数据集，500 张" --allow-write
+pip install -r requirements.txt
+python main.py
 ```
 
-确定性流水线（对已有 `raw/` 的任务目录执行步骤 5-8）：
+首次使用：
 
-```bash
-python -m celebrity pipeline --work datasets/宋雨琦_20260812_000000 --skip-vision
-```
+1. 在对话里粘贴 `DEEPSEEK_API_KEY=sk-...`（或输入 `/model`），自动写入 `.env`；
+2. 粘贴小红书 Cookie（`XHS_COOKIE`），爬虫即可使用；
+3. 输入任务，例如：`帮我爬取宋雨琦的图片，50 张`。
+
+## 功能要点
+
+- 8 步流水线：部署 → 爬取 → 检查/去重 → 模型判断 → 相似去重 → 打标签 → 打包 → 通知。
+- 断点续跑：任务进度落盘（manifest / judgment / reports），中断后继续不重复爬取。
+- 逐图判断：默认 Qwen3-VL（可下载或指定本地路径），支持 flash-attention 加速与批量打标签。
+- 数量校验：进入打标签前检查是否达到目标，不足自动返回补爬。
+- Claude Code 风格终端：流式输出、动画状态行、进度条、快捷命令补全。
+- 注册表式扩展：新增工具、OpenAI 兼容厂商、视觉模型均为配置级扩展，无需改核心。
+
+## 常用命令
+
+| 命令 | 说明 |
+|------|------|
+| `/model` | 切换模型厂商 / 设置 API Key |
+| `/vision` | 选择视觉模型（下载 Qwen-VL / 本地路径 / YuNet） |
+| `/cookie` | 设置小红书 Cookie |
+| `/status` | 查看当前配置（密钥脱敏） |
+| `/tools` | 查看可用工具 |
+| `/reset` | 开启新会话 |
+| `/exit` | 返回主页面 |
+
+对话内可直接粘贴密钥自动填充；`Esc` / `Ctrl+C` 返回上一级，主页面再次按下为退出确认。
 
 ## 配置与密钥
 
-- 行为配置：`config.yaml`（模型 Provider、视觉模型、爬取关键词、质量阈值等）。
-- 密钥：`.env`（`DEEPSEEK_API_KEY`、`XHS_COOKIE`、`DASHSCOPE_API_KEY` 等），绝不写入 YAML 或日志。
-- 换模型：`provider.default` 改成任意已配置的 OpenAI 兼容 Profile；新增厂商只需在 `provider` 下加 `base_url / model / api_key_env`。
-
-## 架构
-
-```
-celebrity/
-├── cli.py                  # CLI 入口：agent / chat / pipeline / deploy / doctor / banner
-├── core/                   # agent 循环、消息角色语法
-├── providers/              # 模型 Provider 抽象 + OpenAI 兼容实现（DeepSeek 默认）
-├── tools/                  # 工具契约、注册表、内置工具（crawl / pipeline / filesystem）
-├── vision/                 # 视觉 Provider：YuNet / OpenAI 兼容视觉 / 本地 Qwen3-VL（可选）
-├── pipeline/               # 确定性步骤 5-8：检查/去重/判断/相似去重/建集/打包
-├── crawler.py              # Spider_XHS 爬虫集成（懒加载）
-├── deploy.py               # 爬虫部署与依赖检查
-├── security.py             # 脱敏、路径围栏、风险分级
-├── config.py               # YAML + .env 配置加载
-└── sessions.py             # 任务持久化与恢复
-```
-
-### 扩展一个工具
-
-在 `celebrity/tools/builtin/` 注册一个 `ToolSpec(name, description, parameters, handler, risk, check_fn)`，自动出现在 Agent 的工具 Schema 中；权限在 `dispatch` 阶段强制执行，不依赖 Schema 隐藏。
-
-### 扩展一个模型厂商
-
-在 `config.yaml` 添加：
-
-```yaml
-provider:
-  myvendor:
-    base_url: "https://api.example.com/v1"
-    model: "example-chat"
-    api_key_env: "MYVENDOR_API_KEY"
-```
-
-然后 `provider.default: myvendor` 即可，无需代码。
+- 行为配置：`config.yaml`（模型厂商、视觉模型、爬取关键词、质量阈值）。
+- 密钥：`.env`（`DEEPSEEK_API_KEY`、`XHS_COOKIE` 等），支持 `CELEBRITY_ENV_FILE` 重定向。
+- 核心模块：`celebrity/core`（Agent 循环）、`providers`（模型）、`tools`（工具）、`vision`（视觉）、`pipeline`（流水线）。
 
 ## 测试
 
 ```bash
 python -m pytest tests -q
 ```
-
-测试全部走公共接口（agent loop、工具注册表、Provider 解析、流水线步骤），不触碰真实密钥与用户数据。
 
 > 仅供学习与技术交流，请遵守平台条款，勿商用。

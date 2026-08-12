@@ -1,78 +1,76 @@
-# Celebrity
+<div align="center">
 
-A lightweight, extensible **agent** for building celebrity image datasets. The default model API is **DeepSeek (deepseek-v4-flash)** (OpenAI-compatible), and the crawl → clean → judge → caption → package workflow is exposed as agent tools while a deterministic `pipeline` mode is preserved.
+# CelebData Agent
+**A lightweight, extensible agent for building celebrity image datasets, powered by DeepSeek by default.**
 
-## Design principles
+[![Python][python-shield]][python-url]
+[![Platform][platform-shield]][platform-url]
+[![License][license-shield]][license-url]
+<br>
+[![Release][release-shield]][release-url]
+[![Downloads][downloads-shield]][downloads-url]
 
-- **Narrow waist**: `celebrity/core/agent.py` is the single conversation/tool loop; the CLI only adapts to it.
-- **Registry-driven extensions**: model providers, vision providers, and tools are all registered. Adding an OpenAI-compatible vendor is pure configuration.
-- **Lightweight**: no torch/transformers in the default install (local VLM is an optional extra).
-- **Secure**: secrets live in `.env` only; tools are risk-graded (`read` / `write` / `destructive`); destructive actions require confirmation; file paths are confined to work directories; outputs are secret-redacted; retries are bounded.
-- **Free**: any OpenAI-compatible API can be the model provider (DeepSeek by default); vision can be YuNet, an OpenAI-compatible vision endpoint, or a local Qwen3-VL.
+[python-shield]: https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white
+[python-url]: https://www.python.org/
+[platform-shield]: https://img.shields.io/badge/Win%20%7C%20Linux%20%7C%20macOS-lightgrey
+[platform-url]: https://github.com/SSXXXzjx/CelebData-Agent
+[license-shield]: https://img.shields.io/badge/License-MIT-orange
+[license-url]: https://github.com/SSXXXzjx/CelebData-Agent/blob/main/LICENSE
+[release-shield]: https://img.shields.io/github/v/release/SSXXXzjx/CelebData-Agent?style=flat
+[release-url]: https://github.com/SSXXXzjx/CelebData-Agent/releases
+[downloads-shield]: https://img.shields.io/github/downloads/SSXXXzjx/CelebData-Agent/total?style=flat
+[downloads-url]: https://github.com/SSXXXzjx/CelebData-Agent/releases
 
-## Quick start
+</div>
 
-```bash
-pip install -r requirements.txt     # or pip install -e .
-cp .env.example .env      # fill in DEEPSEEK_API_KEY (default model API)
-python -m celebrity doctor   # environment self-check
-python main.py                 # main page: banner + intro + menu (↑/↓ to select)
-```
+Describe a task in one sentence and the agent runs the full pipeline — crawl, dedup, model judging, captioning, packaging — into a training-ready image dataset.
 
-Choose "enter chat" from the main page, then just type tasks; `/` opens
-slash-command autocomplete. Pipeline progress renders above the input box,
-model / token / elapsed metrics below it:
+- **Agent-driven orchestration**: crawl, judge, backfill, and caption are scheduled by the model; missing counts are topped up automatically.
+- **Plug-and-play models**: DeepSeek by default; any OpenAI-compatible API works via config. Image judging uses Qwen3-VL with a lightweight YuNet fallback.
+- **Fully visible**: streaming output, live progress bars, and elapsed-time stats — never a black box.
+- **Secret-safe**: API keys / cookies live only in `.env`, auto-filled on paste, never sent to the model or committed.
 
-**Paste-to-fill secrets**: paste `DEEPSEEK_API_KEY=sk-xxx`, `XHS_COOKIE=...`,
-or a bare `sk-...` / cookie into the chat. It is recognized locally and
-written to `.env` (masked confirmation only, never sent to the model).
-
-```
-/model    switch provider (deepseek / openai / custom) and set API key
-/apikey   set API key for the current provider (writes .env)
-/cookie   set the Xiaohongshu cookie (writes .env)
-/vision   switch vision provider (none / YuNet / OpenAI-compatible / local Qwen3-VL)
-/status   show current config (secrets masked)
-/tools    list available tools
-/reset    start a new session
-/exit     back to main page
-```
-
-ESC / Ctrl+C pop one level (chat → main page); at the main page, Ctrl+C asks
-for exit confirmation first.
-
-One-shot task:
+## Get Started
 
 ```bash
-python -m celebrity agent "build a 500-image dataset for 宋雨琦" --allow-write
+pip install -r requirements.txt
+python main.py
 ```
 
-Deterministic pipeline over an existing task directory:
+First run:
 
-```bash
-python -m celebrity pipeline --work datasets/some_task --skip-vision
-```
+1. Paste `DEEPSEEK_API_KEY=sk-...` in the chat (or type `/model`) to write `.env`.
+2. Paste the Xiaohongshu cookie (`XHS_COOKIE`) to enable crawling.
+3. Type a task, e.g. `build a 50-image dataset for 宋雨琦`.
 
-## Configuration and secrets
+## Features
+
+- 8-step pipeline: deploy → crawl → check/dedup → model judging → similarity dedup → captioning → packaging → notify.
+- Resumable: task state is persisted (manifest / judgment / reports); resumes never re-crawl.
+- Image judging: Qwen3-VL by default (download or local path), flash-attention acceleration and batch captioning.
+- Count validation: checks the target before captioning and auto-backfills by crawling more.
+- Claude Code style terminal: streaming output, animated status, progress bars, slash-command completion.
+- Registry-driven extensions: new tools, OpenAI-compatible vendors, and vision models are config-level.
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/model` | Switch provider / set API key |
+| `/vision` | Choose vision model (download Qwen-VL / local path / YuNet) |
+| `/cookie` | Set the Xiaohongshu cookie |
+| `/status` | Show current config (secrets masked) |
+| `/tools` | List available tools |
+| `/reset` | Start a new session |
+| `/exit` | Back to main page |
+
+Paste secrets directly in chat to auto-fill; `Esc` / `Ctrl+C` pops one level, and at the main page confirms exit.
+
+## Configuration & Secrets
 
 - Behavior: `config.yaml` (providers, vision, crawl keywords, quality thresholds).
-- Secrets: `.env` (`DEEPSEEK_API_KEY`, `XHS_COOKIE`, `DASHSCOPE_API_KEY`, ...). Never put secrets in YAML or logs.
-- New vendor: add `base_url / model / api_key_env` under `provider.*` and switch `provider.default`.
-
-## Layout
-
-```
-celebrity/
-├── cli.py                  # agent / chat / pipeline / deploy / doctor / banner
-├── core/                   # agent loop, message role grammar
-├── providers/              # provider boundary + OpenAI-compatible (DeepSeek default)
-├── tools/                  # tool contract, registry, built-ins
-├── vision/                 # YuNet / OpenAI-compatible vision / local Qwen3-VL (optional)
-├── pipeline/               # deterministic steps 5-8
-├── crawler.py  deploy.py   # Spider_XHS integration
-├── security.py             # redaction, path fence, risk gates
-├── config.py  sessions.py  # config and task persistence
-```
+- Secrets: `.env` (`DEEPSEEK_API_KEY`, `XHS_COOKIE`, ...); `CELEBRITY_ENV_FILE` redirects the env file.
+- Core modules: `celebrity/core` (agent loop), `providers` (models), `tools`, `vision`, `pipeline`.
 
 ## Tests
 
