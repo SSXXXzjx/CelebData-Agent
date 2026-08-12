@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ===== Celebrity 项目专属 =====
+datasets/
+outputs/
+models/
+.celebrity_history
+third_party/Spider_XHS/node_modules/
+third_party/Spider_XHS/.npm-cache/
+third_party/Spider_XHS/__pycache__/
+third_party/Spider_XHS/.env
+third_party/Spider_XHS/datas/
+third_party/Spider_XHS/models/
