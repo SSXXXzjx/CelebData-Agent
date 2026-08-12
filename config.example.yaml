@@ -1,0 +1,61 @@
+# Copy to config.yaml and adjust. Secrets go into .env (see .env.example).
+agent:
+  system_prompt: ""
+  max_turns: 12
+  temperature: 0.3
+  timeout_seconds: 120
+  retries: 3
+  allow_risk: ["read", "write", "destructive"]
+
+provider:
+  default: deepseek
+  deepseek:
+    base_url: "https://api.deepseek.com"
+    model: "deepseek-v4-flash"
+    api_key_env: "DEEPSEEK_API_KEY"
+
+vision:
+  provider: ""
+  yunet:
+    url: "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
+  openai:
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    model: "qwen-vl-plus"
+    api_key_env: "DASHSCOPE_API_KEY"
+    max_image_mb: 20
+  local_vlm:
+    model_dir: "models/Qwen3-VL-8B-Instruct"
+    repo: "Qwen/Qwen3-VL-8B-Instruct"
+    attn_implementation: ""
+    caption_batch_size: 2
+    caption_max_new_tokens: 512
+    judge_max_new_tokens: 160
+
+work:
+  datasets_dir: "datasets"
+  models_dir: "models"
+  outputs_dir: "outputs"
+
+spider_xhs:
+  dir: "third_party/Spider_XHS"
+  repo: "https://github.com/cv-cat/Spider_XHS.git"
+
+crawl:
+  keywords: ["写真", "单人照", "自拍", "生活照", "高清写真", "画报", "杂志", "日常", "随拍", "美图"]
+  sort_types: [0, 2]
+  notes_per_query: 40
+  api_sleep: 1.2
+  download_sleep: 0.5
+
+quality:
+  min_short_side: 720
+  target_count: 500
+  dedup_by_hash: true
+  similarity_dedup: true
+  similarity_method: phash
+  similarity_threshold: 8
+  similarity_model: ""
+
+label:
+  filename_prefix: dataset
+  caption_enabled: true

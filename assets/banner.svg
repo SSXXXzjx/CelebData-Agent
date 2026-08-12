@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="260" viewBox="0 0 960 260">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3E3E75"/>
+      <stop offset="55%" stop-color="#4E1F6E"/>
+      <stop offset="100%" stop-color="#201030"/>
+    </linearGradient>
+    <radialGradient id="magic" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#45A9A9" stop-opacity="0.30"/>
+      <stop offset="55%" stop-color="#4E1F6E" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#4E1F6E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="txt" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#98E8DE"/>
+      <stop offset="45%" stop-color="#45A9A9"/>
+      <stop offset="100%" stop-color="#98E8DE"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#45A9A9" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#98E8DE" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#45A9A9" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-25%" y="-30%" width="150%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="960" height="260" rx="18" fill="url(#bg)"/>
+  <rect x="1" y="1" width="958" height="258" rx="17" fill="none" stroke="#45A9A9" stroke-opacity="0.35" stroke-width="1.5"/>
+  <rect width="960" height="260" rx="18" fill="url(#magic)"/>
+
+  <g fill="#98E8DE" opacity="0.5">
+    <circle cx="120" cy="70" r="1.8"/>
+    <circle cx="845" cy="58" r="1.4"/>
+    <circle cx="780" cy="120" r="1.2"/>
+    <circle cx="175" cy="150" r="1.3"/>
+    <circle cx="920" cy="185" r="1.6"/>
+  </g>
+  <g fill="#45A9A9" opacity="0.35">
+    <circle cx="60" cy="190" r="1.2"/>
+    <circle cx="880" cy="95" r="1.5"/>
+    <circle cx="300" cy="55" r="1.1"/>
+  </g>
+
+  <path d="M0 246 Q 120 208 240 246 T 480 246 T 720 246 T 960 246" fill="none" stroke="#45A9A9" stroke-opacity="0.30" stroke-width="2"/>
+  <path d="M0 254 Q 160 228 320 254 T 640 254 T 960 254" fill="none" stroke="#98E8DE" stroke-opacity="0.18" stroke-width="1.5"/>
+
+  <text x="480" y="128" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="900" letter-spacing="10" fill="url(#txt)" filter="url(#glow)">CELEBRITY</text>
+
+  <line x1="180" y1="158" x2="780" y2="158" stroke="url(#line)" stroke-width="2"/>
+
+  <text x="480" y="192" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" letter-spacing="4" fill="#98E8DE">明星数据集自动化构建 · AI CELEBRITY DATASET CLI</text>
+
+  <text x="480" y="226" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" letter-spacing="3" fill="#8a7bb8">DARK FOREST MAGIC  ·  8-STEP PIPELINE  ·  SLASH COMMANDS  ·  QWEN3-VL</text>
+</svg>

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "celebrity"
+version = "0.2.0"
+description = "Lightweight, extensible agent for building celebrity image datasets. Default model API: DeepSeek (OpenAI-compatible)."
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "httpx>=0.27",
+    "PyYAML>=6.0",
+    "rich>=13.0",
+    "python-dotenv>=1.0",
+    "Pillow>=10.0",
+    "numpy>=1.24",
+    "imagehash>=4.3",
+]
+
+[project.optional-dependencies]
+cv = ["opencv-python>=4.8"]
+vlm = [
+    "torch>=2.1",
+    "transformers>=4.57",
+    "accelerate>=0.30",
+    "qwen-vl-utils>=0.0.10",
+    "modelscope>=1.9",
+]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+celebrity = "celebrity.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["celebrity*"]
